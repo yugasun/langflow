@@ -277,6 +277,7 @@ import SvgWolfram from "../icons/Wolfram/Wolfram";
 import { HackerNewsIcon } from "../icons/hackerNews";
 import { MistralIcon } from "../icons/mistral";
 import { SupabaseIcon } from "../icons/supabase";
+import { TongyiIcon } from "../icons/Tongyi";
 import { iconsType } from "../types/components";
 
 export const BG_NOISE =
@@ -663,6 +664,7 @@ export const nodeIconsLucide: iconsType = {
   ZepMemory: ZepMemoryIcon,
   Langwatch: LangwatchIcon,
   Mem0,
+  Tongyi: TongyiIcon,
 
   //Node Icons
   model_specs: FileSliders,
