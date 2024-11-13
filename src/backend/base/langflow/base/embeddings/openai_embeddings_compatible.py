@@ -118,19 +118,13 @@ class OpenAIEmbeddingsCompatible(BaseModel, Embeddings):
     # to support Azure OpenAI Service custom deployment names
     deployment: str | None = model
     # to support Azure OpenAI Service custom endpoints
-    openai_api_base: str | None = Field(
-        alias="base_url", default_factory=from_env("OPENAI_API_BASE", default=None)
-    )
+    openai_api_base: str | None = Field(alias="base_url", default_factory=from_env("OPENAI_API_BASE", default=None))
     """Base URL path for API requests, leave blank if not using a proxy or service
         emulator."""
     # to support Azure OpenAI Service custom endpoints
-    openai_api_type: str | None = Field(
-        default_factory=from_env("OPENAI_API_TYPE", default=None)
-    )
+    openai_api_type: str | None = Field(default_factory=from_env("OPENAI_API_TYPE", default=None))
     # to support explicit proxy for OpenAI
-    openai_proxy: str | None = Field(
-        default_factory=from_env("OPENAI_PROXY", default=None)
-    )
+    openai_proxy: str | None = Field(default_factory=from_env("OPENAI_PROXY", default=None))
     embedding_ctx_length: int = 8191
     """The maximum number of tokens to embed at once."""
     openai_api_key: SecretStr | None = Field(
@@ -139,9 +133,7 @@ class OpenAIEmbeddingsCompatible(BaseModel, Embeddings):
     """Automatically inferred from env var `OPENAI_API_KEY` if not provided."""
     openai_organization: str | None = Field(
         alias="organization",
-        default_factory=from_env(
-            ["OPENAI_ORG_ID", "OPENAI_ORGANIZATION"], default=None
-        ),
+        default_factory=from_env(["OPENAI_ORG_ID", "OPENAI_ORGANIZATION"], default=None),
     )
     """Automatically inferred from env var `OPENAI_ORG_ID` if not provided."""
     allowed_special: Literal["all"] | set[str] | None = None
@@ -150,9 +142,7 @@ class OpenAIEmbeddingsCompatible(BaseModel, Embeddings):
     """Maximum number of texts to embed in each batch"""
     max_retries: int = 2
     """Maximum number of retries to make when generating."""
-    request_timeout: float | tuple[float, float] | Any | None = Field(
-        default=None, alias="timeout"
-    )
+    request_timeout: float | tuple[float, float] | Any | None = Field(default=None, alias="timeout")
     """Timeout for requests to OpenAI completion API. Can be float, httpx.Timeout or
         None."""
     headers: Any = None
@@ -182,9 +172,7 @@ class OpenAIEmbeddingsCompatible(BaseModel, Embeddings):
     """Whether to check the token length of inputs and automatically split inputs
         longer than embedding_ctx_length."""
 
-    model_config = ConfigDict(
-        extra="forbid", populate_by_name=True, protected_namespaces=()
-    )
+    model_config = ConfigDict(extra="forbid", populate_by_name=True, protected_namespaces=())
 
     @model_validator(mode="before")
     @classmethod
@@ -219,15 +207,10 @@ class OpenAIEmbeddingsCompatible(BaseModel, Embeddings):
     def validate_environment(self) -> Self:
         """Validate that api key and python package exists in environment."""
         if self.openai_api_type in ("azure", "azure_ad", "azuread"):
-            msg = (
-                "If you are using Azure, "
-                "please use the `AzureOpenAIEmbeddings` class."
-            )
+            msg = "If you are using Azure, " "please use the `AzureOpenAIEmbeddings` class."
             raise ValueError(msg)
         client_params: dict = {
-            "api_key": (
-                self.openai_api_key.get_secret_value() if self.openai_api_key else None
-            ),
+            "api_key": (self.openai_api_key.get_secret_value() if self.openai_api_key else None),
             "organization": self.openai_organization,
             "base_url": self.openai_api_base,
             "timeout": self.request_timeout,
@@ -251,10 +234,7 @@ class OpenAIEmbeddingsCompatible(BaseModel, Embeddings):
                 try:
                     import httpx
                 except ImportError as e:
-                    msg = (
-                        "Could not import httpx python package. "
-                        "Please install it with `pip install httpx`."
-                    )
+                    msg = "Could not import httpx python package. " "Please install it with `pip install httpx`."
                     raise ImportError(msg) from e
                 self.http_client = httpx.Client(proxy=self.openai_proxy)
             sync_specific = {"http_client": self.http_client}
@@ -264,10 +244,7 @@ class OpenAIEmbeddingsCompatible(BaseModel, Embeddings):
                 try:
                     import httpx
                 except ImportError as e:
-                    msg = (
-                        "Could not import httpx python package. "
-                        "Please install it with `pip install httpx`."
-                    )
+                    msg = "Could not import httpx python package. " "Please install it with `pip install httpx`."
                     raise ImportError(msg) from e
                 self.http_async_client = httpx.AsyncClient(proxy=self.openai_proxy)
             async_specific = {"http_client": self.http_async_client}
@@ -312,9 +289,7 @@ class OpenAIEmbeddingsCompatible(BaseModel, Embeddings):
         """
         embeddings: list[list[float]] = []
         for i in range(len(texts)):
-            response = await self.async_client.create(
-                input=texts[i], **self._invocation_params
-            )
+            response = await self.async_client.create(input=texts[i], **self._invocation_params)
             if not isinstance(response, dict):
                 response = response.dict()
             embeddings.extend(r["embedding"] for r in response["data"])

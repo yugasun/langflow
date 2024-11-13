@@ -43,9 +43,7 @@ class TongyiEmbeddingsComponent(LCEmbeddingsModel):
             advanced=True,
             value=1536,
         ),
-        IntInput(
-            name="max_retries", display_name="Max Retries", value=3, advanced=True
-        ),
+        IntInput(name="max_retries", display_name="Max Retries", value=3, advanced=True),
         DropdownInput(
             name="model",
             display_name="Model",
@@ -54,32 +52,22 @@ class TongyiEmbeddingsComponent(LCEmbeddingsModel):
             value="text-embedding-v3",
         ),
         DictInput(name="model_kwargs", display_name="Model Kwargs", advanced=True),
-        SecretStrInput(
-            name="tongyi_api_key", display_name="Tongyi API Key", value="TONGYI_API_KEY"
-        ),
+        SecretStrInput(name="tongyi_api_key", display_name="Tongyi API Key", value="TONGYI_API_KEY"),
         MessageTextInput(
             name="tongyi_api_base",
             display_name="Tongyi API Base",
             advanced=True,
             value="https://dashscope.aliyuncs.com/compatible-mode/v1",
         ),
-        MessageTextInput(
-            name="tongyi_api_type", display_name="Tongyi API Type", advanced=True
-        ),
+        MessageTextInput(name="tongyi_api_type", display_name="Tongyi API Type", advanced=True),
         MessageTextInput(
             name="tongyi_organization",
             display_name="Tongyi Organization",
             advanced=True,
         ),
-        MessageTextInput(
-            name="tongyi_proxy", display_name="Tongyi Proxy", advanced=True
-        ),
-        FloatInput(
-            name="request_timeout", display_name="Request Timeout", advanced=True
-        ),
-        BoolInput(
-            name="show_progress_bar", display_name="Show Progress Bar", advanced=True
-        ),
+        MessageTextInput(name="tongyi_proxy", display_name="Tongyi Proxy", advanced=True),
+        FloatInput(name="request_timeout", display_name="Request Timeout", advanced=True),
+        BoolInput(name="show_progress_bar", display_name="Show Progress Bar", advanced=True),
         BoolInput(name="skip_empty", display_name="Skip Empty", advanced=True),
         MessageTextInput(
             name="tiktoken_model_name",

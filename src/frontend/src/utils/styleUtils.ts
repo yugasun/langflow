@@ -268,6 +268,7 @@ import { Share2Icon } from "../icons/Share2";
 import SvgSlackIcon from "../icons/Slack/SlackIcon";
 import { SpiderIcon } from "../icons/Spider";
 import { Streamlit } from "../icons/Streamlit";
+import { TongyiIcon } from "../icons/Tongyi";
 import { UpstashSvgIcon } from "../icons/Upstash";
 import { VectaraIcon } from "../icons/VectaraIcon";
 import { VertexAIIcon } from "../icons/VertexAI";
@@ -277,7 +278,6 @@ import SvgWolfram from "../icons/Wolfram/Wolfram";
 import { HackerNewsIcon } from "../icons/hackerNews";
 import { MistralIcon } from "../icons/mistral";
 import { SupabaseIcon } from "../icons/supabase";
-import { TongyiIcon } from "../icons/Tongyi";
 import { iconsType } from "../types/components";
 
 export const BG_NOISE =

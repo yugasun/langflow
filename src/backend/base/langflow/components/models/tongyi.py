@@ -62,8 +62,7 @@ class TongyiModelComponent(LCModelComponent):
             name="tongyi_api_base",
             display_name="Tongyi API Base",
             advanced=True,
-            info="The base URL of the Tongyi API. "
-            "Defaults to https://dashscope.aliyuncs.com/compatible-mode/v1. ",
+            info="The base URL of the Tongyi API. " "Defaults to https://dashscope.aliyuncs.com/compatible-mode/v1. ",
         ),
         SecretStrInput(
             name="api_key",
@@ -92,23 +91,17 @@ class TongyiModelComponent(LCModelComponent):
     def build_model(self) -> LanguageModel:  # type: ignore[type-var]
         # self.output_schema is a list of dictionaries
         # let's convert it to a dictionary
-        output_schema_dict: dict[str, str] = reduce(
-            operator.ior, self.output_schema or {}, {}
-        )
+        output_schema_dict: dict[str, str] = reduce(operator.ior, self.output_schema or {}, {})
         tongyi_api_key = self.api_key
         temperature = self.temperature
         model_name: str = self.model_name
         max_tokens = self.max_tokens
         model_kwargs = self.model_kwargs or {}
-        tongyi_api_base = (
-            self.tongyi_api_base or "https://dashscope.aliyuncs.com/compatible-mode/v1"
-        )
+        tongyi_api_base = self.tongyi_api_base or "https://dashscope.aliyuncs.com/compatible-mode/v1"
         json_mode = bool(output_schema_dict) or self.json_mode
         seed = self.seed
 
-        api_key = (
-            SecretStr(tongyi_api_key).get_secret_value() if tongyi_api_key else None
-        )
+        api_key = SecretStr(tongyi_api_key).get_secret_value() if tongyi_api_key else None
         output = ChatOpenAI(
             max_tokens=max_tokens or None,
             model_kwargs=model_kwargs,
@@ -120,9 +113,7 @@ class TongyiModelComponent(LCModelComponent):
         )
         if json_mode:
             if output_schema_dict:
-                output = output.with_structured_output(
-                    schema=output_schema_dict, method="json_mode"
-                )
+                output = output.with_structured_output(schema=output_schema_dict, method="json_mode")
             else:
                 output = output.bind(response_format={"type": "json_object"})
 
