@@ -1,5 +1,6 @@
 import ast
 import asyncio
+import os
 import zlib
 from pathlib import Path
 
@@ -73,11 +74,17 @@ class DirectoryReader:
                         component_tuple = (*build_component(component), component)
                         components.append(component_tuple)
                 except Exception:  # noqa: BLE001
-                    logger.debug(f"Error while loading component {component['name']} from {component['file']}")
+                    logger.debug(
+                        f"Error while loading component {component['name']} from {component['file']}"
+                    )
                     continue
-            items.append({"name": menu["name"], "path": menu["path"], "components": components})
+            items.append(
+                {"name": menu["name"], "path": menu["path"], "components": components}
+            )
         filtered = [menu for menu in items if menu["components"]]
-        logger.debug(f"Filtered components {'with errors' if with_errors else ''}: {len(filtered)}")
+        logger.debug(
+            f"Filtered components {'with errors' if with_errors else ''}: {len(filtered)}"
+        )
         return {"menu": filtered}
 
     def validate_code(self, file_content) -> bool:
@@ -141,7 +148,11 @@ class DirectoryReader:
             relative_depth = len(file_path.relative_to(safe_path_obj).parts)
 
             # Only include files that are one or two levels deep
-            if relative_depth <= MAX_DEPTH and file_path.is_file() and not file_path.name.startswith("__"):
+            if (
+                relative_depth <= MAX_DEPTH
+                and file_path.is_file()
+                and not file_path.name.startswith("__")
+            ):
                 file_list.append(str(file_path))
         return file_list
 
@@ -171,7 +182,9 @@ class DirectoryReader:
             for node in ast.walk(module):
                 if isinstance(node, ast.FunctionDef):
                     for arg in node.args.args:
-                        if self._is_type_hint_in_arg_annotation(arg.annotation, type_hint_name):
+                        if self._is_type_hint_in_arg_annotation(
+                            arg.annotation, type_hint_name
+                        ):
                             return True
         except SyntaxError:
             # Returns False if the code is not valid Python
@@ -187,12 +200,14 @@ class DirectoryReader:
             and annotation.value.id == type_hint_name
         )
 
-    def is_type_hint_used_but_not_imported(self, type_hint_name: str, code: str) -> bool:
+    def is_type_hint_used_but_not_imported(
+        self, type_hint_name: str, code: str
+    ) -> bool:
         """Check if a type hint is used but not imported in the given code."""
         try:
-            return self._is_type_hint_used_in_args(type_hint_name, code) and not self._is_type_hint_imported(
+            return self._is_type_hint_used_in_args(
                 type_hint_name, code
-            )
+            ) and not self._is_type_hint_imported(type_hint_name, code)
         except SyntaxError:
             # Returns True if there's something wrong with the code
             # TODO : Find a better way to handle this
@@ -212,9 +227,9 @@ class DirectoryReader:
             return False, "Empty file"
         if not self.validate_code(file_content):
             return False, "Syntax error"
-        if self._is_type_hint_used_in_args("Optional", file_content) and not self._is_type_hint_imported(
+        if self._is_type_hint_used_in_args(
             "Optional", file_content
-        ):
+        ) and not self._is_type_hint_imported("Optional", file_content):
             return (
                 False,
                 "Type hint 'Optional' is used but not imported in the code.",
@@ -223,10 +238,33 @@ class DirectoryReader:
             file_content = str(StringCompressor(file_content).compress_string())
         return True, file_content
 
+    def filter_components_types(self, file_paths):
+        # filter components types by EXCLUDE_COMPONENTS_TYPES
+        EXCLUDE_COMPONENTS_TYPES = os.getenv("EXCLUDE_COMPONENTS_TYPES", "").split(",")
+        logger.debug(f"EXCLUDE_COMPONENTS_TYPES: {EXCLUDE_COMPONENTS_TYPES}")
+        file_paths = [
+            file_path
+            for file_path in file_paths
+            if not any(
+                [
+                    f"/{exclude_type}/" in file_path
+                    for exclude_type in EXCLUDE_COMPONENTS_TYPES
+                ]
+            )
+        ]
+
+        logger.debug(f"Filtered {len(file_paths)} file paths")
+
+        return file_paths
+
     def build_component_menu_list(self, file_paths):
         """Build a list of menus with their components from the .py files in the directory."""
         response = {"menu": []}
-        logger.debug("-------------------- Building component menu list --------------------")
+        logger.debug(
+            "-------------------- Building component menu list --------------------"
+        )
+
+        file_paths = self.filter_components_types(file_paths)
 
         for file_path in file_paths:
             file_path_ = Path(file_path)
@@ -247,7 +285,9 @@ class DirectoryReader:
 
             # first check if it's already CamelCase
             if "_" in component_name:
-                component_name_camelcase = " ".join(word.title() for word in component_name.split("_"))
+                component_name_camelcase = " ".join(
+                    word.title() for word in component_name.split("_")
+                )
             else:
                 component_name_camelcase = component_name
 
@@ -255,7 +295,9 @@ class DirectoryReader:
                 try:
                     output_types = self.get_output_types_from_code(result_content)
                 except Exception:  # noqa: BLE001
-                    logger.opt(exception=True).debug("Error while getting output types from code")
+                    logger.opt(exception=True).debug(
+                        "Error while getting output types from code"
+                    )
                     output_types = [component_name_camelcase]
             else:
                 output_types = [component_name_camelcase]
@@ -271,7 +313,9 @@ class DirectoryReader:
 
             if menu_result not in response["menu"]:
                 response["menu"].append(menu_result)
-        logger.debug("-------------------- Component menu list built --------------------")
+        logger.debug(
+            "-------------------- Component menu list built --------------------"
+        )
         return response
 
     async def process_file_async(self, file_path):
@@ -287,9 +331,9 @@ class DirectoryReader:
             return False, "Empty file"
         if not self.validate_code(file_content):
             return False, "Syntax error"
-        if self._is_type_hint_used_in_args("Optional", file_content) and not self._is_type_hint_imported(
+        if self._is_type_hint_used_in_args(
             "Optional", file_content
-        ):
+        ) and not self._is_type_hint_imported("Optional", file_content):
             return (
                 False,
                 "Type hint 'Optional' is used but not imported in the code.",
@@ -300,12 +344,18 @@ class DirectoryReader:
 
     async def abuild_component_menu_list(self, file_paths):
         response = {"menu": []}
-        logger.debug("-------------------- Async Building component menu list --------------------")
+        logger.debug(
+            "-------------------- Async Building component menu list --------------------"
+        )
+
+        file_paths = self.filter_components_types(file_paths)
 
         tasks = [self.process_file_async(file_path) for file_path in file_paths]
         results = await asyncio.gather(*tasks)
 
-        for file_path, (validation_result, result_content) in zip(file_paths, results, strict=True):
+        for file_path, (validation_result, result_content) in zip(
+            file_paths, results, strict=True
+        ):
             file_path_ = Path(file_path)
             menu_name = file_path_.parent.name
             filename = file_path_.name
@@ -321,13 +371,17 @@ class DirectoryReader:
             component_name = filename.split(".")[0]
 
             if "_" in component_name:
-                component_name_camelcase = " ".join(word.title() for word in component_name.split("_"))
+                component_name_camelcase = " ".join(
+                    word.title() for word in component_name.split("_")
+                )
             else:
                 component_name_camelcase = component_name
 
             if validation_result:
                 try:
-                    output_types = await asyncio.to_thread(self.get_output_types_from_code, result_content)
+                    output_types = await asyncio.to_thread(
+                        self.get_output_types_from_code, result_content
+                    )
                 except Exception:  # noqa: BLE001
                     logger.exception("Error while getting output types from code")
                     output_types = [component_name_camelcase]
@@ -346,7 +400,9 @@ class DirectoryReader:
             if menu_result not in response["menu"]:
                 response["menu"].append(menu_result)
 
-        logger.debug("-------------------- Component menu list built --------------------")
+        logger.debug(
+            "-------------------- Component menu list built --------------------"
+        )
         return response
 
     @staticmethod
@@ -357,3 +413,59 @@ class DirectoryReader:
 
         # Get the name of types classes
         return [type_.__name__ for type_ in types_list if hasattr(type_, "__name__")]
+
+    async def filter_git_diff_files(self, file_paths):
+        """Filter files based on git diff to only process changed files.
+
+        This function checks if files have been modified according to git.
+        If git is not available or if there's an error, all files are returned.
+        """
+        try:
+            # Get the repository root directory
+            repo_root = Path(self.directory_path).resolve()
+            while not (repo_root / ".git").exists():
+                if repo_root.parent == repo_root:  # Reached root of filesystem
+                    # Not in a git repository, return all files
+                    return file_paths
+                repo_root = repo_root.parent
+
+            # Execute git diff command to get modified files
+            proc = await asyncio.create_subprocess_exec(
+                "git",
+                "-C",
+                str(repo_root),
+                "diff",
+                "--name-only",
+                "HEAD",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+
+            if proc.returncode != 0:
+                logger.warning(f"Git diff command failed: {stderr.decode().strip()}")
+                return file_paths
+
+            # Get list of changed files (relative to repo root)
+            changed_files = [
+                line.strip() for line in stdout.decode().split("\n") if line.strip()
+            ]
+
+            # Convert to absolute paths
+            changed_paths = {
+                str((repo_root / path).resolve()) for path in changed_files
+            }
+
+            # Filter only files that have changed
+            return [
+                file_path
+                for file_path in file_paths
+                if any(
+                    str(Path(file_path).resolve()).startswith(changed_path)
+                    for changed_path in changed_paths
+                )
+            ]
+
+        except Exception as e:
+            logger.warning(f"Error while filtering git diff files: {e}")
+            return file_paths  # Return all files if there's an error

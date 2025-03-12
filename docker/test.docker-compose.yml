@@ -1,0 +1,13 @@
+services:
+  postgres:
+    restart: always
+    image: postgres:15
+    platform: linux/amd64
+    ports:
+      - 15432:5432
+    environment:
+      POSTGRES_USER: chatbi
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: chatbi
+    volumes:
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d

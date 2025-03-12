@@ -378,6 +378,14 @@ dcdev_up:
 	docker compose -f docker/dev.docker-compose.yml down || true
 	docker compose -f docker/dev.docker-compose.yml up --remove-orphans
 
+dctest_up: dctest_down
+	@echo 'Running test docker compose up'
+	docker compose -f docker/test.docker-compose.yml up --remove-orphans
+
+dctest_down:
+	@echo 'Running test docker compose down'
+	docker compose -f docker/test.docker-compose.yml down || true
+
 lock_base:
 	cd src/backend/base && uv lock
 
